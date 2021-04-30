@@ -1,0 +1,111 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package ignite.streaming;
+
+import java.util.List;
+
+import org.apache.ignite.Ignite;
+import org.apache.ignite.IgniteCache;
+import org.apache.ignite.IgniteServices;
+import org.apache.ignite.Ignition;
+import org.apache.ignite.cache.affinity.AffinityUuid;
+import org.apache.ignite.cache.query.SqlFieldsQuery;
+import org.apache.ignite.configuration.CacheConfiguration;
+
+/**
+ * Periodically query popular numbers from the streaming cache.
+ * To start the example, you should:
+ * <ul>
+ *     <li>Start a few nodes using {@link ServerNodeStartup}.</li>
+ *     <li>Start streaming using {@link StreamWords}.</li>
+ *     <li>Start querying popular words using {@link QueryWords}.</li>
+ * </ul>
+ */
+public class QueryWords {
+    /**
+     * Schedules words query execution.
+     *
+     * @param args Command line arguments (none required).
+     * @throws Exception If failed.
+     */
+    public static void main(String[] args) throws Exception {
+        // Mark this cluster member as client.
+        Ignition.setClientMode(true);
+
+        try (Ignite ignite = Ignition.start(CacheConfig.xmlConfigPath)) {
+            if (!ExamplesUtils.hasServerNodes(ignite))
+                return;
+
+            CacheConfiguration<AffinityUuid, String> cfg = CacheConfig.wordCache();
+
+            // The cache is configured with sliding window holding 1 second of the streaming data.
+            try (IgniteCache<AffinityUuid, String> stmCache = ignite.getOrCreateCache(cfg)) {
+                // Select top 10 words.
+                SqlFieldsQuery top10Qry = new SqlFieldsQuery(
+                    "select _val, count(_val) as cnt from String group by _val order by cnt desc limit 10",
+                    true /*collocated*/
+                );
+
+                // Select average, min, and max counts among all the words.
+                SqlFieldsQuery statsQry = new SqlFieldsQuery(
+                    "select avg(cnt), min(cnt), max(cnt) from (select count(_val) as cnt from String group by _val)");
+                
+                
+                
+                StreamerService streamerService = null;
+                try {
+                	//nu citeste din cache-ul de pe server nodes unde scrie serviciul ci direct din serviciul/instanta deployed pe server nodes; in realitate intai se creeaza un proxy pe nodul de client al serviciului deployed pe server node iar aici se acceseaza acest proxy
+                	IgniteServices igniteServices = ignite.services();
+                	streamerService = igniteServices.serviceProxy("wordStreamerServices", StreamerService.class, true);
+                }catch (org.apache.ignite.IgniteException e) {
+					System.err.println("O exceptie la obtinerea proxy-ului de serviciu.");
+				}
+                
+                
+                // Query top 10 popular numbers every 5 seconds.
+                while (true) {
+                	try {
+                		if(streamerService != null) System.out.println("Numarul de cuvinte pe secunda: " + streamerService.getWordsPerSecond());
+                	}
+                	catch (org.apache.ignite.IgniteException e) {
+    					System.err.println("O exceptie la obtinerea proxy-ului de serviciu.");
+    				}
+                    // Execute queries.
+                    List<List<?>> top10 = stmCache.query(top10Qry).getAll();
+                    List<List<?>> stats = stmCache.query(statsQry).getAll();
+
+                    // Print average count.
+                    List<?> row = stats.get(0);
+
+                    if (row.get(0) != null)
+                        System.out.printf("Query results [avg=%d, min=%d, max=%d]%n",
+                            row.get(0), row.get(1), row.get(2));
+
+                    // Print top 10 words.
+                    ExamplesUtils.printQueryResults(top10);
+
+                    Thread.sleep(5000);
+                }
+            }
+            finally {
+                // Distributed cache could be removed from cluster only by #destroyCache() call.
+                ignite.destroyCache(cfg.getName());
+            }
+        }
+    }
+}
