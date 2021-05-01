@@ -22,7 +22,7 @@ public class CacheClient {
 		
 		try (Ignite ignite = Ignition.start("C:\\javaDev\\apache-ignite\\examples\\config\\example-ignite.xml")) {
 			
-			//Configure PARTITIONED cashe to store 'Angajat' data
+			//Configure PARTITIONED cache to store 'Angajat' data
 			CacheConfiguration<Long, Angajat> angajatCfg = new CacheConfiguration(cacheName);
 			angajatCfg.setCacheMode(CacheMode.PARTITIONED);
 			angajatCfg.setIndexedTypes(Long.class, Angajat.class);
@@ -31,7 +31,7 @@ public class CacheClient {
 			long id = new Random().nextLong();
 			//id = 1L;
 			angajat.setId(id);//dc id-ul deja exista in cash nu va adauga intrarea
-			angajat.setName("Name3");
+			angajat.setName("Name7");
 			angajatCache.put(angajat.getId(), angajat);
 			
 			//Get the names of all the employees

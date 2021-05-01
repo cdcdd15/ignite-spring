@@ -15,6 +15,17 @@ public class EmployeeDTO implements Serializable {
 
 	@QuerySqlField(index = true)
 	private boolean isEmployed;
+	
+	@QuerySqlField(index = true)
+	private Integer salary;
+
+	public Integer getSalary() {
+		return salary;
+	}
+
+	public void setSalary(Integer salary) {
+		this.salary = salary;
+	}
 
 	public Integer getId() {
 		return id;
