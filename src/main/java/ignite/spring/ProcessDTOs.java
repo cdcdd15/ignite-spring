@@ -12,7 +12,7 @@ import org.apache.ignite.cluster.ClusterGroup;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.lang.IgniteRunnable;
 
-public class ProcessDTOs implements Serializable{
+public class ProcessDTOs implements Serializable {
 	public static void main(String[] args) throws IgniteException {
 		IgniteConfiguration cfg = CacheUtil.createCacheConfiguration();
 		Ignition.setClientMode(true);
@@ -21,17 +21,17 @@ public class ProcessDTOs implements Serializable{
 			Set<Integer> keys = CacheUtil.fetchAllKeysFromCache(ignite, cache);
 			ClusterGroup clusterGroup = ignite.cluster().forRemotes();
 			ignite.compute(clusterGroup).withName("event-task").run(new IgniteRunnable() {
-		        @Override
-		        public void run() {
-		        	Map<Integer, EmployeeDTO> dtos = cache.getAll(keys);
-		        	for(Integer key:keys) {
-		            EmployeeDTO dto = cache.get(key);
+				@Override
+				public void run() {
+					Map<Integer, EmployeeDTO> dtos = cache.getAll(keys);
+					for (Integer key : keys) {
+						EmployeeDTO dto = cache.get(key);
 						System.out.println("Executing Employee job " + dto.getName());
-						dto.setSalary(dto.getSalary() + dto.getSalary()/10);
+						dto.setSalary(dto.getSalary() + dto.getSalary() / 10);
 						cache.put(key, dto);
-		        	}
-		        }
-		    });
+					}
+				}
+			});
 		}
 		System.out.println("end ProcessDTOs");
 	}

@@ -1,14 +1,12 @@
 package ignite.spring;
 
 import java.io.Serializable;
-import java.util.Random;
 import java.util.Set;
 
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteException;
 import org.apache.ignite.Ignition;
-import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
 
 public class InsertDTOs implements Serializable{
