@@ -13,8 +13,6 @@ public class CacheDestroy {
 		try (Ignite ignite = Ignition.start(cfg)) {
 			IgniteCache<Integer, EmployeeDTO> cache = ignite.getOrCreateCache(CacheUtil.cacheName);
 			cache.destroy();
-//		Set<Integer> keys = CacheUtil.fetchAllKeysFromCache(ignite, cache);
-//		ClusterGroup clusterGroup = ignite.cluster().forRemotes();
 		}
 		System.out.println("end CacheDestroy");
 	}

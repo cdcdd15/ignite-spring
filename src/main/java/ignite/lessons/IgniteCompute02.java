@@ -11,7 +11,7 @@ import ignite.streaming.CacheConfig;
 public class IgniteCompute02 {
 	public static void main(String[] args) throws Exception {
 		// Mark this cluster member as server node, the default value = false.
-        Ignition.setClientMode(false);
+        Ignition.setClientMode(true);
         try (Ignite ignite = Ignition.start(CacheConfig.xmlConfigPath)) {
         	IgniteCluster igniteCluster = ignite.cluster();
         	ClusterGroup clusterGroup = igniteCluster.forRemotes();

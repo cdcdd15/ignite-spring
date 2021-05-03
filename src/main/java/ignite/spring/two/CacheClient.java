@@ -31,7 +31,7 @@ public class CacheClient {
 			long id = new Random().nextLong();
 			//id = 1L;
 			angajat.setId(id);//dc id-ul deja exista in cash nu va adauga intrarea
-			angajat.setName("Name7");
+			angajat.setName("Name9");
 			angajatCache.put(angajat.getId(), angajat);
 			
 			//Get the names of all the employees

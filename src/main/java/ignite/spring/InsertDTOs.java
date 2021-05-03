@@ -13,6 +13,7 @@ public class InsertDTOs implements Serializable{
 	public static void main(String[] args) throws IgniteException {
 		IgniteConfiguration cfg = CacheUtil.createCacheConfiguration();
 		Ignition.setClientMode(true);
+//		try (Ignite ignite = Ignition.start(CacheUtil.xmlConfig)) {
 		try (Ignite ignite = Ignition.start(cfg)) {
 			IgniteCache<Integer, EmployeeDTO> cache = ignite.getOrCreateCache(CacheUtil.cacheName);
 			EmployeeDTO dto = new EmployeeDTO();

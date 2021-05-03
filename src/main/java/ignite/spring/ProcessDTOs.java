@@ -17,6 +17,7 @@ public class ProcessDTOs implements Serializable {
 		IgniteConfiguration cfg = CacheUtil.createCacheConfiguration();
 		Ignition.setClientMode(true);
 		try (Ignite ignite = Ignition.start(cfg)) {
+//		try (Ignite ignite = Ignition.start(CacheUtil.xmlConfig)) {
 			IgniteCache<Integer, EmployeeDTO> cache = ignite.getOrCreateCache(CacheUtil.cacheName);
 			Set<Integer> keys = CacheUtil.fetchAllKeysFromCache(ignite, cache);
 			ClusterGroup clusterGroup = ignite.cluster().forRemotes();
@@ -26,8 +27,9 @@ public class ProcessDTOs implements Serializable {
 					Map<Integer, EmployeeDTO> dtos = cache.getAll(keys);
 					for (Integer key : keys) {
 						EmployeeDTO dto = cache.get(key);
-						System.out.println("Executing Employee job " + dto.getName());
 						dto.setSalary(dto.getSalary() + dto.getSalary() / 10);
+						System.out.println(
+								"Executing Employee job for name=" + dto.getName() + " and salary=" + dto.getSalary());
 						cache.put(key, dto);
 					}
 				}
